@@ -45,6 +45,11 @@ public class AuthController {
         try {
             String password = signupRequest.getPassword();
             String emString = signupRequest.getEmail();
+            if (emString == null || password == null) {
+                SignUpResponse response = new SignUpResponse(400,
+                        "Invalid Payload");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
             if (!UserFuncion.isValidEmail(emString)) {
                 SignUpResponse response = new SignUpResponse(400,
                         "Please Enter Valid Email");
@@ -85,6 +90,11 @@ public class AuthController {
         try {
             String emString = loginRequest.getEmail();
             String password = loginRequest.getPassword();
+            if (emString == null || password == null) {
+                LoginResponse response = new LoginResponse(400,
+                        "Invalid Payload", null, null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
             if (!UserFuncion.isValidEmail(emString)) {
                 LoginResponse response = new LoginResponse(400,
                         "Please Enter Valid Email", null, null);
