@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MxworldApplication<mxworld>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.mxworld.mxworld.MxworldApplication",
+            "projectName": "mxworld",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
