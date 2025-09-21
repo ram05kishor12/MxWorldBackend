@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.Map;
 
 import java.util.Optional;
@@ -27,6 +29,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication API", description = "Signup and Login endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class AuthController {
 
     private final Jwt jwtUtil;
@@ -132,9 +135,9 @@ public class AuthController {
     }
 
     @PostMapping("/refresh_token")
-    public ResponseEntity<LoginResponse> refreshToken(@RequestBody Token tokenRequest) {
+    public ResponseEntity<LoginResponse> refreshToken(@RequestBody Token tokenRequest, HttpServletRequest request) {
         String refreshToken = tokenRequest.getRefreshToken();
-
+        
         if (refreshToken == null) {
             LoginResponse response = new LoginResponse(400, "Please Provide Token", null, null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
