@@ -2,8 +2,14 @@ package com.mxworld.mxworld.controller;
 
 import com.mxworld.mxworld.model.RefreshToken;
 import com.mxworld.mxworld.model.User;
+import com.mxworld.mxworld.repository.OtpRepository;
+import com.mxworld.mxworld.service.OtpService;
 import com.mxworld.mxworld.service.RefreshTokenService;
 import com.mxworld.mxworld.service.UserService;
+import com.mxworld.mxworld.syntax.Otp.Otp;
+import com.mxworld.mxworld.syntax.Otp.OtpResponse;
+import com.mxworld.mxworld.syntax.Otp.OtpValidation;
+import com.mxworld.mxworld.syntax.Otp.OtpValidationResponse;
 import com.mxworld.mxworld.syntax.refreshToken.Token;
 import com.mxworld.mxworld.syntax.users.Login;
 import com.mxworld.mxworld.syntax.users.LoginResponse;
@@ -25,6 +31,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.Map;
 
 import java.util.Optional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,14 +40,20 @@ import java.util.Optional;
 @SecurityRequirement(name = "bearerAuth")
 public class AuthController {
 
+    private final OtpRepository otpRepository;
+
     private final Jwt jwtUtil;
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
+    private final OtpService otpService;
 
-    public AuthController(Jwt jwtUtil, UserService userService, RefreshTokenService refreshTokenService) {
+    public AuthController(Jwt jwtUtil, UserService userService, RefreshTokenService refreshTokenService,
+            OtpRepository otpRepository, OtpService otpService) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
         this.refreshTokenService = refreshTokenService;
+        this.otpRepository = otpRepository;
+        this.otpService = otpService;
     }
 
     @Operation(summary = "Register a new user")
@@ -137,7 +151,7 @@ public class AuthController {
     @PostMapping("/refresh_token")
     public ResponseEntity<LoginResponse> refreshToken(@RequestBody Token tokenRequest, HttpServletRequest request) {
         String refreshToken = tokenRequest.getRefreshToken();
-        
+
         if (refreshToken == null) {
             LoginResponse response = new LoginResponse(400, "Please Provide Token", null, null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -162,4 +176,51 @@ public class AuthController {
                 });
 
     }
+
+    @PostMapping("/sendOtp")
+    public ResponseEntity<OtpResponse> sendOtp(@RequestBody Otp otpRequest) {
+        if (otpRequest.getEmail() == null) {
+            OtpResponse response = new OtpResponse(400, "Invalid Payload", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        String emString = otpRequest.getEmail();
+        if (!UserFuncion.isValidEmail(emString)) {
+            OtpResponse response = new OtpResponse(400, "Please Enter Valid Email", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        try {
+            String token = otpService.generateAndSend(otpRequest.getEmail());
+            return ResponseEntity
+                    .ok(new OtpResponse(200, "OTP has been sent to your email", token));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new OtpResponse(500, "Failed to send OTP: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/validateOtp")
+    public ResponseEntity<OtpValidationResponse> validateOtp(@RequestBody OtpValidation otpValidation) {
+        if (otpValidation.getOtp() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new OtpValidationResponse(400, "Invalid Payload"));
+        }
+        try {
+            boolean value = otpService.validateOtp(otpValidation.getToken(), otpValidation.getOtp());
+            System.out.println("Vlaue of validating :" + value);
+            if (value) {
+                return ResponseEntity
+                        .status(HttpStatus.ACCEPTED).body(new OtpValidationResponse(200, "OTP has been verified"));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_ACCEPTABLE).body(new OtpValidationResponse(400, "OTP has not been verified"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new OtpValidationResponse(500, "Failed to send OTP: " + e.getMessage()));
+        }
+
+    }
+
 }
