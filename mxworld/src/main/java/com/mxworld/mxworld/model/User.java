@@ -23,4 +23,7 @@ public class User {
 
     @Column(nullable = true)
     private String Role;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Profile profile;
 }
