@@ -45,7 +45,7 @@ public class SecurityConfig {
                     "/webjars/**"
                 ).permitAll()
                 // Only login & register are public
-                .requestMatchers("/api/auth/login", "/api/auth/signup" , "/api/auth/sendOtp", "/api/auth/validateOtp").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/signup" , "/api/auth/sendOtp", "/api/auth/validateOtp" , "/api/auth/forgotten-password").permitAll()
                 // All other endpoints (including refresh token) require authentication
                 .anyRequest().authenticated()
             )

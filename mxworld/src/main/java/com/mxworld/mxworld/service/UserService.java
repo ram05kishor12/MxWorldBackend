@@ -28,6 +28,7 @@ public class UserService {
         Optional<User> user = userRepository.findByEmail(email);
         return user;
     }
+    
 
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPassword());

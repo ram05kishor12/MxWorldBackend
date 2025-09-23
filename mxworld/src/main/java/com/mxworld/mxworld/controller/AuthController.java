@@ -11,6 +11,8 @@ import com.mxworld.mxworld.syntax.Otp.OtpResponse;
 import com.mxworld.mxworld.syntax.Otp.OtpValidation;
 import com.mxworld.mxworld.syntax.Otp.OtpValidationResponse;
 import com.mxworld.mxworld.syntax.refreshToken.Token;
+import com.mxworld.mxworld.syntax.users.ForgottenPassword;
+import com.mxworld.mxworld.syntax.users.ForgottenPasswordResponse;
 import com.mxworld.mxworld.syntax.users.Login;
 import com.mxworld.mxworld.syntax.users.LoginResponse;
 import com.mxworld.mxworld.syntax.users.SignUpResponse;
@@ -31,8 +33,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.Map;
 
 import java.util.Optional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -213,7 +213,8 @@ public class AuthController {
                         .status(HttpStatus.ACCEPTED).body(new OtpValidationResponse(200, "OTP has been verified"));
             } else {
                 return ResponseEntity
-                        .status(HttpStatus.NOT_ACCEPTABLE).body(new OtpValidationResponse(400, "OTP has not been verified"));
+                        .status(HttpStatus.NOT_ACCEPTABLE)
+                        .body(new OtpValidationResponse(400, "OTP has not been verified"));
             }
         } catch (Exception e) {
             return ResponseEntity
@@ -221,6 +222,43 @@ public class AuthController {
                     .body(new OtpValidationResponse(500, "Failed to send OTP: " + e.getMessage()));
         }
 
+    }
+
+    @PostMapping("/forgotten-password")
+    public ResponseEntity<ForgottenPasswordResponse> forgottenpassword(
+            @RequestBody ForgottenPassword forgottenPassword) {
+        try {
+
+            if (forgottenPassword.getToken() == null || forgottenPassword.getToken().trim().isEmpty() ||
+                    forgottenPassword.getNewPassword() == null || forgottenPassword.getNewPassword().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ForgottenPasswordResponse(400, "Invalid Payload"));
+            }
+
+            if (!UserFuncion.isValidPassword(forgottenPassword.getNewPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ForgottenPasswordResponse(400,
+                                "Password must be at least 8 characters long, contain one uppercase letter, one number, and one special character."));
+            }
+
+            Boolean value = otpService.updatePassword(forgottenPassword.getToken(), forgottenPassword.getNewPassword());
+            if (value) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .body(new ForgottenPasswordResponse(200, "Password updated successfully"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+                        .body(new ForgottenPasswordResponse(400, "Invalid Token"));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ForgottenPasswordResponse(400,
+                            "Password cannot be same as old password"));
+        }
+
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ForgottenPasswordResponse(500, "Internal Server Error" + e.getMessage()));
+        }
     }
 
 }

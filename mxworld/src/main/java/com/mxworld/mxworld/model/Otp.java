@@ -32,4 +32,7 @@ public class Otp {
 
     @Column(nullable = false)
     private LocalDateTime exDateTime;
+
+    @Column
+    private Boolean isVerified;
 }
