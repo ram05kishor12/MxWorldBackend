@@ -22,7 +22,7 @@ public class User {
     private String password;
 
     @Column(nullable = true)
-    private String Role;
+    private String role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Profile profile;
