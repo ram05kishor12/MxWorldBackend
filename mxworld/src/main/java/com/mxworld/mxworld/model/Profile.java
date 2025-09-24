@@ -2,6 +2,8 @@ package com.mxworld.mxworld.model;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,10 +32,14 @@ public class Profile {
     @Column(nullable = true)
     private String phoneNumber;
 
+    @Column
+    private String description;
+    
     @Column(nullable = true)
     private String profileImageUrl;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 }

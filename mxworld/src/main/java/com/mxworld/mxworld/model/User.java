@@ -1,5 +1,7 @@
 package com.mxworld.mxworld.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -25,5 +27,6 @@ public class User {
     private String role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Profile profile;
 }

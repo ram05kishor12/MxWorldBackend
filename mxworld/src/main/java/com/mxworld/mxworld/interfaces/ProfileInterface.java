@@ -1,7 +1,9 @@
 package com.mxworld.mxworld.interfaces;
 
 import com.mxworld.mxworld.model.Profile;
+import com.mxworld.mxworld.syntax.ApiResponseDto;
+import com.mxworld.mxworld.syntax.Profile.ProfileResponse;
 
 public interface ProfileInterface {
-    Profile getProfileById(Long id);
+    ApiResponseDto<ProfileResponse> getProfileById(String token);
 }
