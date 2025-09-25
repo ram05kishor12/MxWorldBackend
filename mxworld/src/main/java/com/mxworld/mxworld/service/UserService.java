@@ -1,5 +1,6 @@
 package com.mxworld.mxworld.service;
 
+import com.mxworld.mxworld.model.Profile;
 import com.mxworld.mxworld.model.User;
 import com.mxworld.mxworld.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Profile profile = new Profile();
+        profile.setUser(user);
+        user.setProfile(profile);
         return userRepository.save(user);
     }
 
@@ -28,7 +32,6 @@ public class UserService {
         Optional<User> user = userRepository.findByEmail(email);
         return user;
     }
-    
 
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPassword());
