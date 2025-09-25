@@ -6,4 +6,5 @@ import com.mxworld.mxworld.syntax.Profile.ProfileResponse;
 
 public interface ProfileInterface {
     ApiResponseDto<ProfileResponse> getProfileById(String token);
+    ApiResponseDto<?> updateProfile(String token , com.mxworld.mxworld.syntax.Profile.Profile profileRequest);
 }

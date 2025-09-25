@@ -24,6 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/mxworld/profile")
@@ -50,4 +53,23 @@ public class ProfileController {
                     .body(new ApiResponseDto<>(500, "Internal Server Error", null));
         }
     }
+
+    @PutMapping("/updateProfile")
+    public ResponseEntity<ApiResponseDto<?>> updateProfile(
+            @RequestBody com.mxworld.mxworld.syntax.Profile.Profile profileRequest,
+            HttpServletRequest request) {
+        try {
+            String header = request.getHeader("Authorization");
+            String token = header.substring(7);
+            ApiResponseDto<?> response = profileInterface.updateProfile(token, profileRequest);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponseDto<>(404, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponseDto<>(500, "Internal Server Error", null));
+        }
+    }
+
 }

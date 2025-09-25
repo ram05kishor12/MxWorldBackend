@@ -11,7 +11,6 @@ import com.mxworld.mxworld.syntax.ApiResponseDto;
 import com.mxworld.mxworld.syntax.Profile.ProfileResponse;
 import com.mxworld.mxworld.utility.Jwt;
 
-
 @Service
 public class ProfileService implements ProfileInterface {
 
@@ -24,7 +23,6 @@ public class ProfileService implements ProfileInterface {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
     }
-
 
     @Override
     public ApiResponseDto<ProfileResponse> getProfileById(String token) {
@@ -45,10 +43,32 @@ public class ProfileService implements ProfileInterface {
                 profile.getLastName(),
                 profile.getPhoneNumber(),
                 profile.getProfileImageUrl(),
-                profile.getDescription()
-        );
+                profile.getDescription());
 
-        return new ApiResponseDto<>(200, "Profile fetched successfully" , profileResponse);
+        return new ApiResponseDto<>(200, "Profile fetched successfully", profileResponse);
 
     }
+
+    @Override
+    public ApiResponseDto<?> updateProfile(String token , com.mxworld.mxworld.syntax.Profile.Profile profileRequest) {
+        String email = jwtUtil.extractEmail(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        Profile existingProfile = profileRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        user.setUsername(profileRequest.getUserName());
+        existingProfile.setFirstName(profileRequest.getFirstName());
+        existingProfile.setLastName(profileRequest.getLastName());
+        existingProfile.setPhoneNumber(profileRequest.getPhoneNumber());
+        existingProfile.setDescription(profileRequest.getDesription());
+
+        userRepository.save(user);
+        profileRepository.save(existingProfile);
+
+        return new ApiResponseDto<Object>(200, "Profile Details Updated Successfully", null);
+    }
+
 }
