@@ -1,5 +1,8 @@
 package com.mxworld.mxworld.controller;
 
+import com.mxworld.mxworld.interfaces.OtpInterface;
+import com.mxworld.mxworld.interfaces.RefreshTokenInterface;
+import com.mxworld.mxworld.interfaces.UserInterface;
 import com.mxworld.mxworld.model.RefreshToken;
 import com.mxworld.mxworld.model.User;
 import com.mxworld.mxworld.repository.OtpRepository;
@@ -35,20 +38,19 @@ import java.util.Optional;
 @SecurityRequirement(name = "bearerAuth")
 public class AuthController {
 
-    private final OtpRepository otpRepository;
+    // private final OtpRepository otpRepository;
 
     private final Jwt jwtUtil;
-    private final UserService userService;
-    private final RefreshTokenService refreshTokenService;
-    private final OtpService otpService;
+    private final UserInterface userInterface;
+    private final RefreshTokenInterface refreshTokenInterface;
+    private final OtpInterface otpInterface;
 
-    public AuthController(Jwt jwtUtil, UserService userService, RefreshTokenService refreshTokenService,
-            OtpRepository otpRepository, OtpService otpService) {
+    public AuthController(Jwt jwtUtil, UserInterface userInterface, RefreshTokenInterface refreshTokenInterface,
+             OtpInterface otpInterface) {
         this.jwtUtil = jwtUtil;
-        this.userService = userService;
-        this.refreshTokenService = refreshTokenService;
-        this.otpRepository = otpRepository;
-        this.otpService = otpService;
+        this.userInterface = userInterface;
+        this.refreshTokenInterface = refreshTokenInterface;
+        this.otpInterface = otpInterface;
     }
 
     @Operation(summary = "Register a new user")
@@ -78,7 +80,7 @@ public class AuthController {
             user.setPassword(signupRequest.getPassword());
 
             // Register user
-            userService.register(user);
+            userInterface.register(user);
 
             // Success response
             SignUpResponse response = new SignUpResponse(200, "User Created Successfully");
@@ -118,7 +120,7 @@ public class AuthController {
                         null, null);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
-            Optional<User> loggedInUser = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            Optional<User> loggedInUser = userInterface.login(loginRequest.getEmail(), loginRequest.getPassword());
 
             if (loggedInUser.isEmpty()) {
                 LoginResponse response = new LoginResponse(404, "User Doesn't Exist", null, null);
@@ -127,12 +129,12 @@ public class AuthController {
 
             User user = loggedInUser.get();
 
-            if (!userService.checkPassword(user, loginRequest.getPassword())) {
+            if (!userInterface.checkPassword(user, loginRequest.getPassword())) {
                 LoginResponse response = new LoginResponse(400, "Invalid Credentials", null, null);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             String jwt = jwtUtil.generateToken(user.getEmail());
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            RefreshToken refreshToken = refreshTokenInterface.createRefreshToken(user);
 
             LoginResponse response = new LoginResponse(200, "Logged In Successfully", jwt, refreshToken.getToken());
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
@@ -152,13 +154,13 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        return refreshTokenService.findByToken(refreshToken)
-                .map(refreshTokenService::verifyExpiration) // returns RefreshToken or throws if expired
+        return refreshTokenInterface.findByToken(refreshToken)
+                .map(refreshTokenInterface::verifyExpiration) // returns RefreshToken or throws if expired
                 .map(RefreshToken::getUser) // returns User
                 .map(user -> {
                     // Generate new JWT and refresh token
                     String newJwt = jwtUtil.generateToken(user.getEmail());
-                    RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
+                    RefreshToken newRefreshToken = refreshTokenInterface.createRefreshToken(user);
 
                     // Prepare response
                     LoginResponse response = new LoginResponse(200, "Token refreshed successfully", newJwt,
@@ -184,7 +186,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         try {
-            String token = otpService.generateAndSend(otpRequest.getEmail());
+            String token = otpInterface.generateAndSend(otpRequest.getEmail());
             return ResponseEntity
                     .ok(new OtpResponse(200, "OTP has been sent to your email", token));
         } catch (Exception e) {
@@ -201,7 +203,7 @@ public class AuthController {
                     .body(new OtpValidationResponse(400, "Invalid Payload"));
         }
         try {
-            boolean value = otpService.validateOtp(otpValidation.getToken(), otpValidation.getOtp());
+            boolean value = otpInterface.validateOtp(otpValidation.getToken(), otpValidation.getOtp());
             System.out.println("Vlaue of validating :" + value);
             if (value) {
                 return ResponseEntity
@@ -236,7 +238,7 @@ public class AuthController {
                                 "Password must be at least 8 characters long, contain one uppercase letter, one number, and one special character."));
             }
 
-            Boolean value = otpService.updatePassword(forgottenPassword.getToken(), forgottenPassword.getNewPassword());
+            Boolean value = otpInterface.updatePassword(forgottenPassword.getToken(), forgottenPassword.getNewPassword());
             if (value) {
                 return ResponseEntity.status(HttpStatus.ACCEPTED)
                         .body(new ForgottenPasswordResponse(200, "Password updated successfully"));
