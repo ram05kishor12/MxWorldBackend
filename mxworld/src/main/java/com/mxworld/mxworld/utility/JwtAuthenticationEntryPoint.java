@@ -7,31 +7,36 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
+    public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-
-        // Set content type to JSON
-        response.setContentType("application/json");
-        // Set HTTP status to 401 Unauthorized
+        
+        String requestURI = request.getRequestURI();
+        System.out.println("AuthenticationEntryPoint triggered for: " + requestURI);
+        
+        // Check if this is a public endpoint - if yes, just return without error
+        if (isPublicEndpoint(requestURI)) {
+            System.out.println("Allowing public endpoint without authentication: " + requestURI);
+            return; // Let the request continue to the controller
+        }
+        
+        // Only send unauthorized response for protected endpoints
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"status\":401,\"message\":\"Unauthorized or invalid JWT\"}");
+    }
 
-        // Prepare JSON response
-        String json = "{"
-                + "\"status\":401,"
-                + "\"message\":\"Unauthorized or invalid JWT\""
-                + "}";
-
-        // Write JSON to response
-        PrintWriter writer = response.getWriter();
-        writer.write(json);
-        writer.flush();
-        writer.close();
+    private boolean isPublicEndpoint(String requestURI) {
+        return requestURI.startsWith("/swagger-ui") ||
+               requestURI.startsWith("/v3/api-docs") ||
+               requestURI.startsWith("/swagger-resources") ||
+               requestURI.startsWith("/webjars") ||
+               requestURI.startsWith("/mxworld/v1/auth") ||
+               requestURI.startsWith("/mxworld/v1/attachment/files") ||
+               requestURI.equals("/favicon.ico");
     }
 }
