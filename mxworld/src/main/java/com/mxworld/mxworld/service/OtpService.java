@@ -10,6 +10,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.mxworld.mxworld.interfaces.OtpInterface;
 import com.mxworld.mxworld.model.Otp;
 import com.mxworld.mxworld.model.User;
 import com.mxworld.mxworld.repository.OtpRepository;
@@ -17,7 +19,7 @@ import com.mxworld.mxworld.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
 @Service
-public class OtpService {
+public class OtpService implements OtpInterface{
 
     private final UserService userService;
 
@@ -36,6 +38,7 @@ public class OtpService {
         this.userService = userService;
     }
 
+    @Override
     public void sendOtpEmail(String to, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("ramkishore29861@gmail.com");
@@ -46,6 +49,7 @@ public class OtpService {
         mailSender.send(message);
     }
 
+    @Override
     public String generateAndSend(String email) {
         String otp = String.valueOf(new Random().nextInt(900000) + 100000);
         String token = UUID.randomUUID().toString();
@@ -61,6 +65,7 @@ public class OtpService {
         return token;
     }
 
+    @Override
     @Transactional
     public boolean validateOtp(String token, String otp) {
         // Fetch OTP record by token
@@ -91,6 +96,7 @@ public class OtpService {
         return true;
     }
 
+    @Override
     @Transactional
     public boolean updatePassword(String token, String newPassword) {
         // 1. Find OTP record by token
