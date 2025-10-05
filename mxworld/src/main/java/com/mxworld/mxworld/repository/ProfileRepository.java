@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.mxworld.mxworld.model.Profile;
-import java.util.List;
 import com.mxworld.mxworld.model.User;
 
 

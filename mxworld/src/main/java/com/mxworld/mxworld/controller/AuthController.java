@@ -20,22 +20,17 @@ import com.mxworld.mxworld.syntax.users.Signup;
 import com.mxworld.mxworld.utility.Jwt;
 import com.mxworld.mxworld.utility.UserFuncion;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.util.Map;
-
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/mxworld/v1/auth")
 @Tag(name = "Authentication API", description = "Signup and Login endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class AuthController {

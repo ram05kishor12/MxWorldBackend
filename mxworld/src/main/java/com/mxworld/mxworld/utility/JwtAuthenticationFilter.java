@@ -32,9 +32,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+
+        System.out.println("Processing URI: " + requestURI);
+
+        // ✅ Skip JWT validation for public endpoints
+        if (isPublicEndpoint(requestURI)) {
+            System.out.println("Skipping JWT validation for public endpoint: " + requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("No Bearer token found for protected endpoint: " + requestURI);
+            // For protected endpoints without token, let the exception handling deal with it
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,9 +66,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("JWT validation successful for user: " + email);
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isPublicEndpoint(String requestURI) {
+        return requestURI.startsWith("/swagger-ui") ||
+               requestURI.startsWith("/v3/api-docs") ||
+               requestURI.startsWith("/swagger-resources") ||
+               requestURI.startsWith("/webjars") ||
+               requestURI.startsWith("/mxworld/v1/auth") ||
+               requestURI.startsWith("/mxworld/v1/attachment/files") ||
+               requestURI.equals("/favicon.ico");
     }
 }
