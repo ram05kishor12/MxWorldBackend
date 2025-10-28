@@ -1,5 +1,7 @@
 package com.mxworld.mxworld.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,6 +34,7 @@ public class Lecture {
 
     @ManyToOne
     @JoinColumn(name = "module_id" , nullable = false)
+    @JsonIgnore
     private Module module;
     
 

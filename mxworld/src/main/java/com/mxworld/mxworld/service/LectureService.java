@@ -1,11 +1,13 @@
 package com.mxworld.mxworld.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.mxworld.mxworld.interfaces.LectureInterface;
 import com.mxworld.mxworld.model.Course;
+import com.mxworld.mxworld.model.Module;
 import com.mxworld.mxworld.repository.LectureRepository;
 import com.mxworld.mxworld.repository.ModuleRepository;
 import com.mxworld.mxworld.syntax.ApiResponseDto;
@@ -19,7 +21,7 @@ import lombok.AllArgsConstructor;
 public class LectureService implements LectureInterface{
 
     private final ModuleRepository moduleRepository;
-    private final LectureRepository LectureRepository;
+    private final LectureRepository lectureRepository;
     
     @Override
     public ApiResponseDto<?> addLecture(String moduleId , @RequestBody Lecture lectureRequest) {
@@ -37,8 +39,25 @@ public class LectureService implements LectureInterface{
         lecture.setLectureContent(lectureRequest.getLectureContent());
         lecture.setModule(module);
         
-        LectureRepository.save(lecture);
+        lectureRepository.save(lecture);
 
         return new ApiResponseDto<>(201, "Module added successfully", null);
+    }
+
+    @Override
+    public ApiResponseDto<?> getAllLecture(String moduleId) {
+        Optional<Module> moduleOtp = moduleRepository.findById(moduleId);
+
+        if (moduleOtp.isEmpty()) {
+            return new ApiResponseDto<>(404, "Module not found", null);
+        }
+
+        List<com.mxworld.mxworld.model.Lecture> lectures = lectureRepository.findByModuleId(moduleId);
+
+        if (lectures.isEmpty()) {
+            return new ApiResponseDto<>(200, "No lectures found for this module", null);
+        }
+
+        return new ApiResponseDto<>(200, "Lectures fetched successfully", lectures);
     }
 }

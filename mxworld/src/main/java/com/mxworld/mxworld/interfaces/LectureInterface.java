@@ -7,4 +7,5 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 public interface LectureInterface {
     ApiResponseDto<?> addLecture(String moduleId ,  @RequestBody Lecture lectureRequest);
+    ApiResponseDto<?> getAllLecture(String moduleId);
 }
