@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +43,18 @@ public class LectureController {
     public ResponseEntity<ApiResponseDto<?>> getAllLecture(@RequestParam String moduleId) {
         try {
             ApiResponseDto<?> respone = lectureInterface.getAllLecture(moduleId);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(respone);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponseDto<>(500, "Internal Server Error", null));
+        }
+    }
+
+    @PutMapping("/updateLecture/{moduleId}/{lectureId}")
+    public ResponseEntity<ApiResponseDto<?>> updateModule(@PathVariable String moduleId, @PathVariable String lectureId,
+            @RequestBody Lecture lectureRequest) {
+        try {
+            ApiResponseDto<?> respone = lectureInterface.updateLecture(moduleId, lectureId, lectureRequest);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(respone);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

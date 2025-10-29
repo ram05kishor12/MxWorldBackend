@@ -18,13 +18,13 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class LectureService implements LectureInterface{
+public class LectureService implements LectureInterface {
 
     private final ModuleRepository moduleRepository;
     private final LectureRepository lectureRepository;
-    
+
     @Override
-    public ApiResponseDto<?> addLecture(String moduleId , @RequestBody Lecture lectureRequest) {
+    public ApiResponseDto<?> addLecture(String moduleId, @RequestBody Lecture lectureRequest) {
         Optional<com.mxworld.mxworld.model.Module> moduleOpt = moduleRepository.findById(moduleId);
 
         if (moduleOpt.isEmpty()) {
@@ -38,7 +38,7 @@ public class LectureService implements LectureInterface{
         lecture.setLectureName(lectureRequest.getLectureName());
         lecture.setLectureContent(lectureRequest.getLectureContent());
         lecture.setModule(module);
-        
+
         lectureRepository.save(lecture);
 
         return new ApiResponseDto<>(201, "Module added successfully", null);
@@ -59,5 +59,33 @@ public class LectureService implements LectureInterface{
         }
 
         return new ApiResponseDto<>(200, "Lectures fetched successfully", lectures);
+    }
+
+    @Override
+    public ApiResponseDto<?> updateLecture(String moduleId, String lectureId, Lecture lectureRRequest) {
+
+        Optional<Module> moduleOpt = moduleRepository.findById(moduleId);
+
+        if (moduleOpt.isEmpty()) {
+            return new ApiResponseDto<>(404, "Module not found", null);
+        }
+
+        Optional<com.mxworld.mxworld.model.Lecture> lectureOpt = lectureRepository.findById(lectureId);
+
+        if (lectureOpt.isEmpty()) {
+            return new ApiResponseDto<>(404, "Lecture not found", null);
+        }
+
+        com.mxworld.mxworld.model.Lecture lecture = lectureOpt.get();
+
+        if (!lecture.getModule().getId().equals(moduleId)) {
+            return new ApiResponseDto<>(404, "Lecture doesnt belong to this module", null);
+        }
+
+        lecture.setLectureName(lectureRRequest.getLectureName());
+        lecture.setLectureContent(lectureRRequest.getLectureContent());
+        lectureRepository.save(lecture);
+
+        return new ApiResponseDto<>(200, "Lecture updated successfully", null);
     }
 }
